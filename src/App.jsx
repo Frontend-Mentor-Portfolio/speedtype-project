@@ -738,6 +738,7 @@ function App() {
 
   return (
     <div className="page">
+      <h1 className="sr-only">Typing Speed Test</h1>
       <header className="topbar">
         <div className="brand">
           <img className="brandLogo" src={logoSmall} alt="" />
@@ -758,7 +759,7 @@ function App() {
       </header>
 
       <section className="toolbar">
-        <div className="liveStats" aria-label="Live stats">
+        <div className="liveStats" role="status" aria-live="polite" aria-label="Live stats">
           <div className="liveStat">
             <span className="liveLabel">WPM:</span>
             <span className="liveValue">{isEnded ? 0 : liveWpm}</span>
@@ -775,7 +776,7 @@ function App() {
           </div>
         </div>
 
-        <div className="controls controlsDesktop">
+        <nav className="controls controlsDesktop" aria-label="Test controls">
           <div className="controlGroup" aria-label="Difficulty">
             <div className="controlLabel">Difficulty:</div>
             <div className="segmented" role="radiogroup" aria-label="Select difficulty">
@@ -938,9 +939,8 @@ function App() {
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="controls controlsMobile" aria-label="Mobile controls">
+        </nav>
+        <nav className="controls controlsMobile" aria-label="Mobile controls">
           <div className="mobileSelectRow">
             <div className={'mobileSelect ' + (isDifficultyMenuOpen ? 'isOpen' : '')}>
               <button
@@ -1120,23 +1120,13 @@ function App() {
               )}
             </div>
           </div>
-        </div>
+        </nav>
       </section>
 
       {showMainTyping ? (
         <main className="main">
           <div
             className={"passageCard " + (!isRunning && !isStarted ? 'isIdle' : '')}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              if (!isEnded && !isRunning) start();
-              queueMicrotask(() => inputRef.current?.focus());
-            }}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if ((e.key === 'Enter' || e.key === ' ') && !isEnded && !isRunning) start();
-            }}
           >
             <div className="passage" aria-label="Typing passage">
               {Array.from(targetText).map((ch, idx) => {
@@ -1171,6 +1161,9 @@ function App() {
               value={typedText}
               onChange={onTypedChange}
               onKeyDown={onTypedKeyDown}
+              onFocus={() => {
+                if (!isEnded && !isRunning) start();
+              }}
               onBlur={() => {
                 if (isRunning) queueMicrotask(() => inputRef.current?.focus());
               }}
