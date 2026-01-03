@@ -439,6 +439,12 @@ html, body {
   background: rgba(255, 255, 255, 0.02);
 }
 
+/* Light theme: darker container so heatmap stands out */
+[data-theme='light'] .heatmap {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.02);
+}
+
 .heatmapHeader {
   display: flex;
   align-items: center;
@@ -482,6 +488,12 @@ html, body {
   gap: 10px;
 }
 
+/* Light theme: darker key tiles */
+[data-theme='light'] .key {
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: rgba(0, 0, 0, 0.04);
+}
+
 .keyLabel {
   font-size: 12px;
   font-weight: 800;
@@ -489,11 +501,19 @@ html, body {
   letter-spacing: -0.01em;
 }
 
+[data-theme='light'] .keyLabel {
+  color: rgba(0, 0, 0, 0.88);
+}
+
 .keyValue {
   font-size: 12px;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.85);
   font-variant-numeric: tabular-nums;
+}
+
+[data-theme='light'] .keyValue {
+  color: rgba(0, 0, 0, 0.72);
 }
 
 @media (max-width: 560px) {
