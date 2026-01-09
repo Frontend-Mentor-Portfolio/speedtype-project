@@ -89,9 +89,11 @@ async function generateShareCardPngBlob({
   elapsedSeconds,
   category,
   personalBest,
+  variant = 'desktop', // 'desktop' | 'mobile'
 }) {
-  const width = 1080;
-  const height = 566;
+  const isMobile = variant === 'mobile';
+  const width = isMobile ? 1080 : 1080;
+  const height = isMobile ? 1920 : 566;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -105,24 +107,29 @@ async function generateShareCardPngBlob({
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, width, height);
 
+  const panelX = 60;
+  const panelY = 60;
+  const panelW = width - 120;
+  const panelH = height - 120;
+
   ctx.fillStyle = 'rgba(255,255,255,0.06)';
-  ctx.fillRect(60, 60, width - 120, height - 120);
+  ctx.fillRect(panelX, panelY, panelW, panelH);
 
   ctx.strokeStyle = 'rgba(255,255,255,0.10)';
   ctx.lineWidth = 2;
-  ctx.strokeRect(60, 60, width - 120, height - 120);
+  ctx.strokeRect(panelX, panelY, panelW, panelH);
 
   ctx.fillStyle = 'rgba(46, 156, 255, 0.85)';
-  ctx.fillRect(60, 60, 8, height - 120);
+  ctx.fillRect(panelX, panelY, 8, panelH);
 
   ctx.fillStyle = 'rgba(255,255,255,0.92)';
-  ctx.font = '800 44px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-  ctx.fillText('Typing Speed Test', 92, 140);
+  ctx.font = isMobile ? '800 72px system-ui, -apple-system, Segoe UI, Roboto, Arial' : '800 44px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+  ctx.fillText('Typing Speed Test', 92, isMobile ? 170 : 140);
 
   ctx.fillStyle = 'rgba(255,255,255,0.70)';
-  ctx.font = '700 22px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+  ctx.font = isMobile ? '700 32px system-ui, -apple-system, Segoe UI, Roboto, Arial' : '700 22px system-ui, -apple-system, Segoe UI, Roboto, Arial';
   const modeLabel = mode === 'timed' ? `Timed (${timedSeconds}s)` : 'Passage';
-  ctx.fillText(`${modeLabel} • ${category} • ${formatCardDate()}`, 92, 182);
+  ctx.fillText(`${modeLabel} • ${category} • ${formatCardDate()}`, 92, isMobile ? 230 : 182);
 
   const cards = [
     { label: 'WPM', value: String(wpm) },
@@ -131,35 +138,66 @@ async function generateShareCardPngBlob({
     { label: 'Best', value: `${personalBest} WPM` },
   ];
 
-  const cardTop = 230;
-  const cardW = 220;
-  const cardH = 150;
-  const gap = 24;
-  const left = 92;
-  for (let i = 0; i < cards.length; i++) {
-    const x = left + i * (cardW + gap);
-    ctx.fillStyle = 'rgba(255,255,255,0.04)';
-    ctx.fillRect(x, cardTop, cardW, cardH);
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x, cardTop, cardW, cardH);
+  if (!isMobile) {
+    const cardTop = 230;
+    const cardW = 220;
+    const cardH = 150;
+    const gap = 24;
+    const left = 92;
+    for (let i = 0; i < cards.length; i++) {
+      const x = left + i * (cardW + gap);
+      ctx.fillStyle = 'rgba(255,255,255,0.04)';
+      ctx.fillRect(x, cardTop, cardW, cardH);
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, cardTop, cardW, cardH);
 
-    ctx.fillStyle = 'rgba(255,255,255,0.65)';
-    ctx.font = '800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-    ctx.fillText(cards[i].label, x + 18, cardTop + 38);
+      ctx.fillStyle = 'rgba(255,255,255,0.65)';
+      ctx.font = '800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+      ctx.fillText(cards[i].label, x + 18, cardTop + 38);
 
-    ctx.fillStyle = 'rgba(255,255,255,0.95)';
-    ctx.font = '900 44px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-    ctx.fillText(cards[i].value, x + 18, cardTop + 104);
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.font = '900 44px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+      ctx.fillText(cards[i].value, x + 18, cardTop + 104);
+    }
+  } else {
+    const gap = 30;
+    const left = 92;
+    const innerW = width - left * 2;
+    const cols = 2;
+    const cardW = Math.floor((innerW - gap) / cols);
+    const cardH = 220;
+    let y = 320;
+    for (let i = 0; i < cards.length; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = left + col * (cardW + gap);
+      const cardTop = y + row * (cardH + gap);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.04)';
+      ctx.fillRect(x, cardTop, cardW, cardH);
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, cardTop, cardW, cardH);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.65)';
+      ctx.font = '800 28px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+      ctx.fillText(cards[i].label, x + 24, cardTop + 52);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.font = '900 68px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+      ctx.fillText(cards[i].value, x + 24, cardTop + 150);
+    }
   }
 
   ctx.fillStyle = 'rgba(255,255,255,0.70)';
-  ctx.font = '700 20px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-  ctx.fillText(`Characters: ${correctChars} correct / ${incorrectChars} incorrect`, 92, 460);
+  ctx.font = isMobile ? '700 30px system-ui, -apple-system, Segoe UI, Roboto, Arial' : '700 20px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+  const charsY = isMobile ? 980 : 460;
+  ctx.fillText(`Characters: ${correctChars} correct / ${incorrectChars} incorrect`, 92, charsY);
 
   ctx.fillStyle = 'rgba(255,255,255,0.45)';
-  ctx.font = '700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-  ctx.fillText('frontendmentor.io • share your progress', 92, 500);
+  ctx.font = isMobile ? '700 26px system-ui, -apple-system, Segoe UI, Roboto, Arial' : '700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+  ctx.fillText('frontendmentor.io • share your progress', 92, isMobile ? charsY + 50 : 500);
 
   return await canvasToBlob(canvas);
 }
@@ -168,6 +206,9 @@ function App() {
   const inputRef = useRef(null);
   const pbAtStartRef = useRef(null);
   const shareMenuRef = useRef(null);
+  // Monotonic timing refs
+  const startMsRef = useRef(0);
+  const endMsRef = useRef(0);
 
   const [difficulty, setDifficulty] = useState('easy');
   const [mode, setMode] = useState('timed');
@@ -381,9 +422,15 @@ function App() {
     setIsRunning(true);
     setTotalIncorrect(0);
     if (mode === 'timed') {
+      const now = performance.now();
+      startMsRef.current = now;
+      endMsRef.current = now + timedSeconds * 1000;
       setTimeRemaining(timedSeconds);
       setTimeElapsed(0);
     } else {
+      const now = performance.now();
+      startMsRef.current = now;
+      endMsRef.current = 0;
       setTimeRemaining(timedSeconds);
       setTimeElapsed(0);
     }
@@ -415,19 +462,17 @@ function App() {
   useEffect(() => {
     if (!isRunning) return undefined;
     const tick = setInterval(() => {
+      const now = performance.now();
       if (mode === 'timed') {
-        setTimeRemaining((t) => {
-          const next = t - 1;
-          if (next <= 0) {
-            queueMicrotask(end);
-            return 0;
-          }
-          return next;
-        });
+        const msRemaining = Math.max(0, endMsRef.current - now);
+        const secRemaining = Math.ceil(msRemaining / 1000);
+        setTimeRemaining(secRemaining);
+        if (msRemaining <= 0) queueMicrotask(end);
       } else {
-        setTimeElapsed((t) => t + 1);
+        const secElapsed = Math.floor((now - startMsRef.current) / 1000);
+        setTimeElapsed(secElapsed);
       }
-    }, 1000);
+    }, 100);
     return () => clearInterval(tick);
   }, [end, isRunning, mode]);
 
@@ -671,7 +716,7 @@ function App() {
     window.open(url, '_blank', 'noopener,noreferrer');
   }, []);
 
-  const buildShareCard = useCallback(async () => {
+  const buildShareCard = useCallback(async (variant = 'desktop') => {
     setShareStatus('');
     setIsShareBusy(true);
     try {
@@ -685,6 +730,7 @@ function App() {
         elapsedSeconds: resultElapsed,
         category: getCategoryLabel(textCategory),
         personalBest: Math.round(personalBest),
+        variant,
       });
 
       if (!blob) throw new Error('Could not generate image.');
@@ -1382,7 +1428,7 @@ function App() {
                       className="shareActionBtn"
                       disabled={isShareBusy}
                       onClick={async () => {
-                        const blob = await buildShareCard();
+                        const blob = await buildShareCard('desktop');
                         if (!blob) return;
                         if (!shareBlobUrl) return;
                         const a = document.createElement('a');
@@ -1402,7 +1448,27 @@ function App() {
                       className="shareActionBtn"
                       disabled={isShareBusy}
                       onClick={async () => {
-                        const blob = await buildShareCard();
+                        const blob = await buildShareCard('mobile');
+                        if (!blob) return;
+                        if (!shareBlobUrl) return;
+                        const a = document.createElement('a');
+                        const stamp = new Date().toISOString().slice(0, 10);
+                        a.href = shareBlobUrl;
+                        a.download = `typing-result-${stamp}-mobile.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        setIsShareMenuOpen(false);
+                      }}
+                    >
+                      {isShareBusy ? 'Generating…' : 'Download mobile card'}
+                    </button>
+                    <button
+                      type="button"
+                      className="shareActionBtn"
+                      disabled={isShareBusy}
+                      onClick={async () => {
+                        const blob = await buildShareCard('desktop');
                         if (!blob) return;
                         try {
                           if (!navigator.clipboard || !window.ClipboardItem) {
